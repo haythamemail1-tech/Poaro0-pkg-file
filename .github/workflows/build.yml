@@ -8,22 +8,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ps3dev/ps3dev:latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fix Git safe directory
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Install make_package_npdrm tool
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git
+          git clone https://github.com/ps3dev/make_package_npdrm.git
+          cd make_package_npdrm
+          make
+          sudo cp make_package_npdrm /usr/local/bin/
 
       - name: Build PKG Package
         run: |
-          export PS3DEV=/usr/local/ps3dev
-          export PSL1GHT=$PS3DEV
-          export PATH=$PATH:$PS3DEV/bin:$PS3DEV/ppu/bin
-
           mkdir -p pkg/USRDIR
 
           if [ -f LINK.XML ]; then cp LINK.XML pkg/USRDIR/LINK.XML; fi
