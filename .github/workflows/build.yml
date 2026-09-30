@@ -16,9 +16,10 @@ jobs:
       - name: Install build tools and make_package_npdrm
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential zlib1g-dev git
-          GIT_TERMINAL_PROMPT=0 git clone --depth 1 https://github.com/ps3dev/make_package_npdrm.git
-          cd make_package_npdrm
+          sudo apt-get install -y build-essential zlib1g-dev curl unzip
+          curl -L -o npdrm.zip https://codeload.github.com/ps3dev/make_package_npdrm/zip/refs/heads/master
+          unzip npdrm.zip
+          cd make_package_npdrm-master
           make
           sudo cp make_package_npdrm /usr/local/bin/
 
