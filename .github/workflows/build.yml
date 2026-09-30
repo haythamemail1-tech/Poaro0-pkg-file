@@ -16,7 +16,7 @@ jobs:
       - name: Install build tools and compile make_package_npdrm
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential zlib1g-dev
+          sudo apt-get install -y build-essential zlib1g-dev libssl-dev
           python3 -c "
           import urllib.request
           import zipfile
@@ -30,9 +30,19 @@ jobs:
           with zipfile.ZipFile('npdrm.zip', 'r') as zip_ref:
               zip_ref.extractall('.')
           
+          # البحث تلقائياً عن المجلد المفكوك أياً كان اسمه
+          folders = [f for f in os.listdir('.') if os.path.isdir(f) and 'make_package_npdrm' in f]
+          if not folders:
+              raise Exception('Extracted folder not found!')
+          
+          target_folder = folders[0]
+          print(f'Entering folder: {target_folder}')
+          os.chdir(target_folder)
+          
           print('Compiling tool...')
-          os.chdir('make_package_npdrm-master')
-          os.system('make')
+          if os.system('make') != 0:
+              raise Exception('Make compilation failed!')
+          
           os.system('sudo cp make_package_npdrm /usr/local/bin/')
           "
 
