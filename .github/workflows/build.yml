@@ -13,14 +13,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install build tools and make_package_npdrm
+      - name: Install build tools and compile make_package_npdrm
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential zlib1g-dev git
-          git -c credential.helper='' clone --depth 1 https://github.com/ps3dev/make_package_npdrm.git
-          cd make_package_npdrm
-          make
-          sudo cp make_package_npdrm /usr/local/bin/
+          sudo apt-get install -y build-essential zlib1g-dev
+          python3 -c "
+          import urllib.request
+          import zipfile
+          import os
+
+          url = 'https://github.com/ps3dev/make_package_npdrm/archive/refs/heads/master.zip'
+          print('Downloading make_package_npdrm...')
+          urllib.request.urlretrieve(url, 'npdrm.zip')
+          
+          print('Extracting zip file...')
+          with zipfile.ZipFile('npdrm.zip', 'r') as zip_ref:
+              zip_ref.extractall('.')
+          
+          print('Compiling tool...')
+          os.chdir('make_package_npdrm-master')
+          os.system('make')
+          os.system('sudo cp make_package_npdrm /usr/local/bin/')
+          "
 
       - name: Build PKG Package
         run: |
