@@ -22,7 +22,7 @@ jobs:
           import zipfile
           import os
 
-          url = 'https://github.com/ps3dev/make_package_npdrm/archive/refs/heads/master.zip'
+          url = 'https://github.com/isojo/make_package_npdrm/archive/refs/heads/master.zip'
           print('Downloading make_package_npdrm...')
           urllib.request.urlretrieve(url, 'npdrm.zip')
           
