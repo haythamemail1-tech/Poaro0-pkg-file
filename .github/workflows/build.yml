@@ -41,12 +41,6 @@ jobs:
 
           # 6. كتابة package.conf
           cat << 'EOF' > pkg/package.conf
-ContentID = UP0001-PR0000001_00-0000000000000000
-K_LICENSEE = 0x00000000000000000000000000000000
-DRM_Type = Free
-Content_Type = GameData
-PackageVersion = 01.00
-EOF
 
           # 7. بناء حزمة PKG
           make_package_npdrm pkg/package.conf pkg/
@@ -66,39 +60,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ps3dev/ps3dev:latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup PS3 Tools
-        uses: ps3dev/setup-ps3dev@master
-
       - name: Build PKG Package
         run: |
-          # 1. Setup toolchain environment paths
+          # 1. إعداد مسارات البيئة
           export PS3DEV=/usr/local/ps3dev
           export PSL1GHT=$PS3DEV
           export PATH=$PATH:$PS3DEV/bin:$PS3DEV/ppu/bin
 
-          # 2. Create required build directory structure
+          # 2. إنشاء المجلد المطلوب
           mkdir -p pkg/USRDIR
 
-          # 3. Copy files to appropriate directories and normalize file names
+          # 3. نسخ الملفات المطلوبة
           [ -f LINK.XML ] && cp LINK.XML pkg/USRDIR/
           [ -f link.xml ] && cp link.xml pkg/USRDIR/
           [ -f ICON0.PNG ] && cp ICON0.PNG pkg/ICON0.PNG
           [ -f icon0.png ] && cp icon0.png pkg/ICON0.PNG
-          [ -f package.conf ] && cp package.conf pkg/package.conf
 
-          # 4. Generate PARAM.SFO using the PSL1GHT sfo tool
-          sfo --title "POARDO" --appid "PR0000001" --type 3 pkg/PARAM.SFO || true
+          # 4. توليد ملف PARAM.SFO
+          sfo --title "POARDO" --appid "PR0000001" --type 3 pkg/PARAM.SFO
 
-          # 5. Create a dummy or placeholder binary if EBOOT.BIN is missing
+          # 5. إنتاج ملف EBOOT.BIN وهمي
           if [ ! -f pkg/USRDIR/EBOOT.BIN ]; then
             touch pkg/USRDIR/EBOOT.BIN
           fi
 
-          # 6. Build final package
+          # 6. كتابة package.conf
+          cat << 'EOF' > pkg/package.conf
+          # 7. بناء حزمة PKG
           make_package_npdrm pkg/package.conf pkg/
 
       - name: Upload PKG Artifact
