@@ -1,0 +1,51 @@
+Name: Build PS3 Web-Link PKG
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PS3 Tools
+        uses: ps3dev/setup-ps3dev@master
+
+      - name: Build PKG Package
+        run: |
+          # 1. Setup toolchain environment paths
+          export PS3DEV=/usr/local/ps3dev
+          export PSL1GHT=$PS3DEV
+          export PATH=$PATH:$PS3DEV/bin:$PS3DEV/ppu/bin
+
+          # 2. Create required build directory structure
+          mkdir -p pkg/USRDIR
+
+          # 3. Copy files to appropriate directories and normalize file names
+          [ -f LINK.XML ] && cp LINK.XML pkg/USRDIR/
+          [ -f link.xml ] && cp link.xml pkg/USRDIR/
+          [ -f ICON0.PNG ] && cp ICON0.PNG pkg/ICON0.PNG
+          [ -f icon0.png ] && cp icon0.png pkg/ICON0.PNG
+          [ -f package.conf ] && cp package.conf pkg/package.conf
+
+          # 4. Generate PARAM.SFO using the PSL1GHT sfo tool
+          sfo --title "POARDO" --appid "PR0000001" --type 3 pkg/PARAM.SFO || true
+
+          # 5. Create a dummy or placeholder binary if EBOOT.BIN is missing
+          if [ ! -f pkg/USRDIR/EBOOT.BIN ]; then
+            touch pkg/USRDIR/EBOOT.BIN
+          fi
+
+          # 6. Build final package
+          make_package_npdrm pkg/package.conf pkg/
+
+      - name: Upload PKG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: POARDO-PS3-PKG
+          path: "*.pkg"
