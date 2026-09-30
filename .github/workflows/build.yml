@@ -13,15 +13,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Precompiled Tool
+      - name: Install build tools and compile make_package_npdrm
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl unzip
-          # تحميل نسخة جاهزة ومستقرة مباشرة لتجنب أخطاء التجميع
-          curl -L -o npdrm.zip https://github.com/isojo/make_package_npdrm/archive/refs/heads/master.zip
+          sudo apt-get install -y build-essential zlib1g-dev curl unzip
+          # تم تصحيح الفرع إلى main لضمان تحميل الملف الحقيقي بدون أخطاء
+          curl -L -o npdrm.zip https://github.com/isojo/make_package_npdrm/archive/refs/heads/main.zip
           unzip npdrm.zip
-          cd make_package_npdrm-master
-          gcc -o make_package_npdrm main.c -lz
+          cd make_package_npdrm-main
+          make
           sudo cp make_package_npdrm /usr/local/bin/
 
       - name: Build PKG Package
