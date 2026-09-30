@@ -13,8 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: pip install ecdsa pycryptodome
+      - name: Install build tools and make_package_npdrm
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git
+          git clone https://github.com/isojo/make_package_npdrm.git || git clone https://github.com/ps3dev/make_package_npdrm.git
+          cd make_package_npdrm
+          make
+          sudo cp make_package_npdrm /usr/local/bin/
 
       - name: Build PKG Package
         run: |
@@ -41,14 +47,11 @@ jobs:
             touch pkg/USRDIR/EBOOT.BIN
           fi
 
-          python3 -c "
-          import os, tarfile
-          with tarfile.open('POARDO.pkg', 'w') as tar:
-              tar.add('pkg', arcname='.')
-          "
+          make_package_npdrm pkg/package.conf pkg/
+          mv *.pkg POARDO.pkg
 
       - name: Upload PKG Artifact
         uses: actions/upload-artifact@v4
         with:
           name: POARDO-PS3-PKG
-          path: "*.pkg"
+          path: "POARDO.pkg"
