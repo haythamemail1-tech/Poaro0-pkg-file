@@ -13,18 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install build tools and compile make_package_npdrm
+      - name: Setup and Compile Official make_package_npdrm
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential zlib1g-dev curl unzip
-          # تم تصحيح الفرع إلى main لضمان تحميل الملف الحقيقي بدون أخطاء
-          curl -L -o npdrm.zip https://github.com/isojo/make_package_npdrm/archive/refs/heads/main.zip
-          unzip npdrm.zip
-          cd make_package_npdrm-main
+          sudo apt-get install -y build-essential zlib1g-dev
+          # سحب الأداة الرسمية الأساسية بدون مشاكل مصادقة
+          git clone https://github.com/ps3dev/make_package_npdrm.git
+          cd make_package_npdrm
           make
           sudo cp make_package_npdrm /usr/local/bin/
 
-      - name: Build PKG Package
+      - name: Build Real PS3 PKG Package
         run: |
           mkdir -p pkg/USRDIR
 
@@ -49,10 +48,11 @@ jobs:
             touch pkg/USRDIR/EBOOT.BIN
           fi
 
+          # بناء حزمة PKG حقيقية ومتوافقة مع PS3 باستخدام الأداة الرسمية
           make_package_npdrm pkg/package.conf pkg/
           mv *.pkg POARDO.pkg
 
-      - name: Upload PKG Artifact
+      - name: Upload Real PKG Artifact
         uses: actions/upload-artifact@v4
         with:
           name: POARDO-PS3-PKG
